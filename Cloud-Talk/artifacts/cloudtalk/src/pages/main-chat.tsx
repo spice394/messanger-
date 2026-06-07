@@ -10,8 +10,8 @@ import { Search, Send, Paperclip, Mic, X, MessageSquare, Phone, Video, ArrowLeft
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { getSession } from "@/lib/session";
-import { apiUrl } from "@/lib/api";
+import { getSession } from "../lib/session";
+import { apiUrl } from "../lib/api";
 import { useWebRTCCall } from "@/hooks/use-webrtc-call";
 import { IncomingCallOverlay, ActiveCallOverlay } from "@/components/call-overlays";
 

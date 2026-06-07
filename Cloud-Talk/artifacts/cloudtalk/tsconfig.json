@@ -6,6 +6,8 @@
     "incremental": true,
     "tsBuildInfoFile": ".tsbuildinfo",
     "noEmit": true,
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "jsx": "preserve",
     "lib": ["esnext", "dom", "dom.iterable"],
     "resolveJsonModule": true,

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { getSession } from "@/lib/session";
-import { useToast } from "@/hooks/use-toast";
+import { getSession } from "../lib/session";
+import { useToast } from "./use-toast";
+import { apiUrl } from "../lib/api";
 
 const STUN_CONFIG: RTCConfiguration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -8,7 +9,7 @@ const STUN_CONFIG: RTCConfiguration = {
 
 async function apiCall(path: string, method = "GET", body?: unknown): Promise<unknown> {
   const token = getSession();
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(apiUrl(path), {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -199,8 +200,16 @@ export function useWebRTCCall() {
   }, []);
 
   const getMedia = useCallback(async (type: "audio" | "video") => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error("This browser does not support microphone/camera access.");
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
       video: type === "video",
     });
     localStreamRef.current = stream;
