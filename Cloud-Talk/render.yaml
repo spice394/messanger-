@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: cloudtalk-api
+    env: node
+    plan: free
+    region: oregon
+    rootDir: artifacts/api-server
+    buildCommand: pnpm install && pnpm --filter @workspace/api-server run build
+    startCommand: pnpm --filter @workspace/api-server run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+  - type: static
+    name: cloudtalk-web
+    plan: free
+    region: oregon
+    rootDir: artifacts/cloudtalk
+    buildCommand: pnpm install && pnpm --filter @workspace/cloudtalk run build
+    staticPublishPath: artifacts/cloudtalk/dist/public
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://cloudtalk-api.onrender.com
