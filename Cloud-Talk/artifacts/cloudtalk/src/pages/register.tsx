@@ -4,11 +4,13 @@ import * as z from "zod";
 import { Link } from "wouter";
 import { useRegister } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/hooks/use-theme";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { saveSession } from "@/lib/session";
+import { Moon, Sun } from "lucide-react";
 
 const registerSchema = z.object({
   nickname: z
@@ -23,6 +25,7 @@ const registerSchema = z.object({
 export default function Register() {
   const { toast } = useToast();
   const registerMutation = useRegister();
+  const { theme, toggleTheme } = useTheme();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -50,6 +53,14 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 z-20 rounded-full border border-border bg-card/80 p-2 text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-foreground"
+        aria-label="Toggle theme"
+      >
+        {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      </button>
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-chart-2/20 rounded-full blur-[100px] mix-blend-screen pointer-events-none" />
