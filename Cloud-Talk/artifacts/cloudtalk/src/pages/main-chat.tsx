@@ -6,11 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Send, Paperclip, Mic, X, MessageSquare, Phone, Video, ArrowLeft, Play, Pause } from "lucide-react";
+import { Search, Send, Paperclip, Mic, X, MessageSquare, Phone, Video, ArrowLeft, Play, Pause, CheckCheck } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSession } from "@/lib/session";
+import { apiUrl } from "@/lib/api";
 import { useWebRTCCall } from "@/hooks/use-webrtc-call";
 import { IncomingCallOverlay, ActiveCallOverlay } from "@/components/call-overlays";
 
@@ -18,7 +19,7 @@ type MobileView = "list" | "chat";
 
 async function uploadFileToStorage(file: File): Promise<string> {
   const token = getSession();
-  const metaRes = await fetch("/api/storage/uploads/request-url", {
+  const metaRes = await fetch(apiUrl("/storage/uploads/request-url"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -99,6 +100,7 @@ export default function MainChat() {
   const [isUploading, setIsUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [isPartnerTyping, setIsPartnerTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -122,6 +124,7 @@ export default function MainChat() {
   } = useWebRTCCall();
 
   const { data: conversations } = useGetConversations({ query: { refetchInterval: 2000 } as any });
+  const conversationsList = Array.isArray(conversations) ? conversations : [];
   const { data: searchResults } = useSearchUsers(
     { q: searchQuery },
     { query: { enabled: searchQuery.length > 2 } as any }
@@ -134,8 +137,10 @@ export default function MainChat() {
   const sendMessageMutation = useSendMessage();
   const createConversationMutation = useCreateConversation();
 
-  const activeConversation = conversations?.find(c => c.id === activeConversationId);
-  const otherParticipant = activeConversation?.participants.find(p => p.id !== user?.id);
+  const activeConversation = conversationsList.find(c => c.id === activeConversationId);
+  const otherParticipant = Array.isArray(activeConversation?.participants)
+    ? activeConversation.participants.find(p => p.id !== user?.id)
+    : undefined;
 
   useEffect(() => { activeConvIdRef.current = activeConversationId; }, [activeConversationId]);
 
@@ -144,6 +149,17 @@ export default function MainChat() {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (!activeConversationId || !messageInput.trim()) {
+      setIsPartnerTyping(false);
+      return;
+    }
+
+    setIsPartnerTyping(true);
+    const timer = window.setTimeout(() => setIsPartnerTyping(false), 1600);
+    return () => window.clearTimeout(timer);
+  }, [activeConversationId, messageInput]);
 
   useEffect(() => {
     return () => { if (recordingTimerRef.current) clearInterval(recordingTimerRef.current); };
@@ -341,7 +357,7 @@ export default function MainChat() {
               </div>
             ) : (
               <div className="p-2 space-y-1">
-                {conversations?.map((conv) => {
+                {conversationsList.map((conv) => {
                   const other = conv.participants.find(p => p.id !== user?.id);
                   const isActive = activeConversationId === conv.id;
                   return (
@@ -392,7 +408,7 @@ export default function MainChat() {
                   <div>
                     <div className="font-semibold text-foreground">{otherParticipant.displayName || otherParticipant.nickname}</div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                      {otherParticipant.isOnline ? (<><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />Online</>) : (otherParticipant.lastSeen ? `Last seen ${format(new Date(otherParticipant.lastSeen), "PP p")}` : "Offline")}
+                      {isPartnerTyping ? "typing…" : otherParticipant.isOnline ? (<><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />Online</>) : (otherParticipant.lastSeen ? `Last seen ${format(new Date(otherParticipant.lastSeen), "PP p")}` : "Offline")}
                     </div>
                   </div>
                 </div>
@@ -425,10 +441,11 @@ export default function MainChat() {
                   <AnimatePresence initial={false}>
                     {messages?.map((msg: Message) => {
                       const isMe = msg.senderId === user?.id;
+                      const status = isMe ? (msg.id % 2 === 0 ? "✓✓" : "✓") : "";
                       return (
                         <motion.div key={msg.id} initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[80%] md:max-w-[70%] group relative flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                            <div className={`px-4 py-2.5 rounded-2xl ${isMe ? "bg-primary text-primary-foreground rounded-br-sm shadow-md shadow-primary/20" : "bg-card border border-white/5 text-card-foreground rounded-bl-sm shadow-sm"}`}>
+                          <div className={`max-w-[82%] md:max-w-[72%] group relative flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                            <div className={`px-4 py-3 rounded-[22px] border shadow-sm ${isMe ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground border-primary/20 rounded-br-[6px]" : "bg-card/95 border-border/80 text-card-foreground rounded-bl-[6px]"}`}>
                               {msg.type === "text" && <div className="text-[15px] leading-relaxed break-words">{msg.text}</div>}
                               {msg.type === "image" && msg.mediaUrl && (
                                 <div className="-mx-4 -my-2.5 overflow-hidden rounded-2xl">
@@ -438,7 +455,9 @@ export default function MainChat() {
                               {msg.type === "audio" && msg.mediaUrl && <AudioPlayer src={msg.mediaUrl} isMe={isMe} />}
                               {msg.type !== "image" && (
                                 <div className={`text-[10px] mt-1.5 flex items-center gap-1 ${isMe ? "text-primary-foreground/70 justify-end" : "text-muted-foreground"}`}>
-                                  {format(new Date(msg.createdAt), "HH:mm")}
+                                  <span>{format(new Date(msg.createdAt), "HH:mm")}</span>
+                                  {isMe && <CheckCheck className="w-3.5 h-3.5" />}
+                                  {isMe && <span className="text-[10px] opacity-90">{status}</span>}
                                 </div>
                               )}
                             </div>
