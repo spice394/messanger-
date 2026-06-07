@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 export default function CallHistory() {
   const { user } = useAuth();
   const { data: calls } = useGetCallHistory();
+  const safeCalls = Array.isArray(calls) ? calls : [];
 
   return (
     <Layout>
@@ -19,7 +20,7 @@ export default function CallHistory() {
 
         <ScrollArea className="flex-1 p-6">
           <div className="max-w-3xl mx-auto space-y-4">
-            {calls?.map((call) => {
+            {safeCalls.map((call) => {
               const isCaller = call.callerId === user?.id;
               const otherPerson = isCaller ? call.receiver : call.caller;
               const isMissed = call.status === "missed" || call.status === "rejected";
@@ -60,7 +61,7 @@ export default function CallHistory() {
               );
             })}
             
-            {calls?.length === 0 && (
+            {safeCalls.length === 0 && (
               <div className="text-center py-20 text-muted-foreground">
                 <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mx-auto mb-4 border border-white/5">
                   <Phone className="w-6 h-6 opacity-50" />
