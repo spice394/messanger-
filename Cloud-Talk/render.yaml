@@ -4,9 +4,9 @@ services:
     env: node
     plan: free
     region: oregon
-    rootDir: artifacts/api-server
-    buildCommand: pnpm install && pnpm --filter @workspace/api-server run build
-    startCommand: pnpm --filter @workspace/api-server run start
+    rootDir: .
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter ./artifacts/api-server run build
+    startCommand: pnpm --filter ./artifacts/api-server run start
     envVars:
       - key: NODE_ENV
         value: production
@@ -21,15 +21,18 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: FRONTEND_URL
-        sync: false
+        value: https://cloudtalk-web.onrender.com
 
-  - type: static
+  - type: web
     name: cloudtalk-web
+    env: node
     plan: free
     region: oregon
-    rootDir: artifacts/cloudtalk
-    buildCommand: pnpm install && pnpm --filter @workspace/cloudtalk run build
-    staticPublishPath: artifacts/cloudtalk/dist/public
+    rootDir: .
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter ./artifacts/cloudtalk run build
+    startCommand: pnpm --filter ./artifacts/cloudtalk run serve
     envVars:
+      - key: PORT
+        value: 10000
       - key: VITE_API_BASE_URL
         value: https://cloudtalk-api.onrender.com
