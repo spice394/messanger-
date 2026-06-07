@@ -1,0 +1,30 @@
+export * from "./generated/api";
+// Explicitly re-export types from generated/types, excluding those that
+// collide with Zod schema names already exported from generated/api
+export type {
+  AuthResponse,
+  Call,
+  CallInput,
+  CallInputType,
+  CallSignal,
+  CallStatus,
+  CallType,
+  Conversation,
+  ConversationInput,
+  ErrorEnvelope,
+  ErrorResponse,
+  HealthStatus,
+  LoginInput,
+  Message,
+  MessageInput,
+  MessageInputType,
+  MessageType,
+  Reaction,
+  ReactionInput,
+  RegisterInput,
+  SearchUsersParams,
+  SuccessResponse,
+  UploadUrlRequest,
+  UploadUrlResponse,
+  User,
+} from "./generated/types";

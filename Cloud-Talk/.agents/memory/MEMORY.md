@@ -1,0 +1,4 @@
+- [Orval Params collision fix](orval-params-collision.md) — When Orval generates *Params Zod schemas, they collide with TypeScript types from generated/types/; fix lib/api-zod/src/index.ts to use explicit named re-exports.
+- [Object Storage setup quirks](object-storage-quirks.md) — React override must use literal version ("19.1.0"), not "$react"; object-storage-web tsconfig needs composite+emitDeclarationOnly for root tsconfig references.
+- [Express 5 req.params type](express5-params-type.md) — req.params values are typed string|string[] in Express 5; wrap with String() when passing to parseInt().
+- [Orval TanStack Query v5 queryKey](orval-tanstack-querykey.md) — Orval-generated hooks accept UseQueryOptions which requires queryKey at the type level; cast partial options with `as any` since hooks set queryKey internally.
