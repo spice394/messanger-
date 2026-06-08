@@ -4,7 +4,7 @@ import * as z from "zod";
 import { Link } from "wouter";
 import { useRegister } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme } from "../hooks/use-theme";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
